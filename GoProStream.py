@@ -44,7 +44,7 @@ RECORD=False
 SAVE=False
 SAVE_FILENAME="goprofeed3"
 SAVE_FORMAT="ts"
-SAVE_LOCATION="/tmp/"
+SAVE_LOCATION=os.path.getcwd()
 ## for wake_on_lan
 GOPRO_IP = '10.5.5.9'
 GOPRO_MAC = 'DEADBEEF0000'
@@ -65,7 +65,8 @@ def gopro_live():
 		response=jsondata["info"]["firmware_version"]
 	except http.client.BadStatusLine:
 		response = urlopen('http://10.5.5.9/camera/cv').read().decode('utf-8')
-	if "HD4" in response or "HD3.2" in response or "HD5" in response or "HX" in response or "HD6" in response:
+
+	if "HD4" in response or "HD3.2" in response or "HD5" in response or "HX" in response or "HD6" in response or 'HD7' in response:
 		print("branch HD4")
 		print(jsondata["info"]["model_name"]+"\n"+jsondata["info"]["firmware_version"])
 		##
@@ -97,7 +98,8 @@ def gopro_live():
 		if VERBOSE==False:
 			loglevel_verbose = "-loglevel panic"
 		if SAVE == False:
-			subprocess.Popen("ffplay " + loglevel_verbose + " -fflags nobuffer -f:v mpegts -probesize 8192 udp://10.5.5.100:8554", shell=True)
+			ffmpegCmd = "ffplay " + loglevel_verbose + " -fflags nobuffer -f:v mpegts -probesize 8192 udp://10.5.5.100:8554"
+			subprocess.Popen(ffmpegCmd, shell=True)
 		else:
 			if SAVE_FORMAT=="ts":
 				TS_PARAMS = " -acodec copy -vcodec copy "
@@ -152,6 +154,4 @@ def wake_on_lan(macaddress):
 	sock.sendto(send_data, (GOPRO_IP, 9))
 
 if __name__ == '__main__':
-	wake_on_lan(GOPRO_MAC)
-	signal.signal(signal.SIGINT, quit_gopro)
 	gopro_live()
